@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Lista de tareas de Melisa</title>
+  <link href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet"> 
+  <style>
+    .completed {
+      text-decoration: line-through;
+      color: pink;
+    }
+    .task-details {
+      font-size: 0.85em;
+      color: gray;
+    }
+  </style>
+</head>
+<body>
+  <div class="container mt-5">
+    <h1 class="text-center">Melisa!! No te olvides de:</h1>
+    <div class="input-group mb-3">
+      <input type="text" id="newTaskInput" class="form-control" placeholder="Nueva tarea">
+      <select id="priorityInput" class="form-control ml-2">
+        <option value="1">Prioridad 1</option>
+        <option value="2">Prioridad 2</option>
+        <option value="3">Prioridad 3</option>
+        <option value="4">Prioridad 4</option>
+        <option value="5">Prioridad 5</option>
+      </select>
+      <div class="input-group-append">
+        <button class="btn btn-primary" id="addTaskBtn">Otra cosa más! :(</button>
+      </div>
+    </div>
+    <div class="mb-3">
+      <button class="btn btn-info" onclick="sortTasksByPriority()">Ordenar por Prioridad</button>
+      <button class="btn btn-info" onclick="sortTasksByDateModified()">Ordenar por Fecha de Modificación</button>
+    </div>
+    <ul class="list-group" id="taskList"></ul>
+  </div>
+
+  <script>
+    let tasks = [];
+
+    document.getElementById('addTaskBtn').addEventListener('click', addTask);
+
+    function addTask() {
+      const taskInput = document.getElementById('newTaskInput');
+      const priorityInput = document.getElementById('priorityInput');
+      const taskText = taskInput.value.trim();
+      const priorityValue = parseInt(priorityInput.value);
+
+      if (taskText === '') {
+        alert('Agregá una tarea, no tenés nada que hacer?');
+        return;
+      }
+
+      const currentDateTime = new Date();
+      const task = {
+        id: Date.now(),
+        text: taskText,
+        priority: priorityValue,
+        dateCreated: currentDateTime,
+        dateModified: currentDateTime
+      };
+
+      tasks.push(task);
+      renderTasks();
+      taskInput.value = '';
+      priorityInput.value = '1';
+    }
+
+    function renderTasks() {
+      const taskList = document.getElementById('taskList');
+      taskList.innerHTML = '';
+
+      tasks.forEach(task => {
+        const listItem = document.createElement('li');
+        listItem.className = 'list-group-item d-flex justify-content-between align-items-center';
+
+        const taskSpan = document.createElement('span');
+        taskSpan.textContent = `${task.text} (Prioridad: ${task.priority})`;
+
+        const taskDetails = document.createElement('div');
+        taskDetails.className = 'task-details';
+        taskDetails.textContent = `Creado: ${task.dateCreated.toLocaleString()} | Modificado: ${task.dateModified.toLocaleString()}`;
+
+        const buttonGroup = document.createElement('div');
+
+        const completeBtn = document.createElement('button');
+        completeBtn.className = 'btn btn-success btn-sm mr-2';
+        completeBtn.textContent = 'Ya está hecha! :)';
+        completeBtn.addEventListener('click', () => {
+          taskSpan.classList.toggle('completed');
+        });
+
+        const editBtn = document.createElement('button');
+        editBtn.className = 'btn btn-warning btn-sm mr-2';
+        editBtn.textContent = 'Editar';
+        editBtn.addEventListener('click', () => {
+          const newTaskText = prompt('Edita la tarea:', task.text);
+          const newPriorityValue = prompt('Edita la prioridad (1-5):', task.priority);
+
+          if (newTaskText !== null && newPriorityValue >= 1 && newPriorityValue <= 5) {
+            task.text = newTaskText.trim();
+            task.priority = parseInt(newPriorityValue.trim());
+            task.dateModified = new Date();
+            renderTasks();
+          }
+        });
+
+        const deleteBtn = document.createElement('button');
+        deleteBtn.className = 'btn btn-danger btn-sm';
+        deleteBtn.textContent = 'Eliminar';
+        deleteBtn.addEventListener('click', () => {
+          tasks = tasks.filter(t => t.id !== task.id);
+          renderTasks();
+        });
+
+        buttonGroup.appendChild(completeBtn);
+        buttonGroup.appendChild(editBtn);
+        buttonGroup.appendChild(deleteBtn);
+
+        listItem.appendChild(taskSpan);
+        listItem.appendChild(buttonGroup);
+        listItem.appendChild(taskDetails);
+
+        taskList.appendChild(listItem);
+      });
+    }
+
+    function sortTasksByPriority() {
+      tasks.sort((a, b) => a.priority - b.priority);
+      renderTasks();
+    }
+
+    function sortTasksByDateModified() {
+      tasks.sort((a, b) => new Date(b.dateModified) - new Date(a.dateModified));
+      renderTasks();
+    }
+  </script>
+
+  <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.2/dist/umd/popper.min.js"></script>
+  <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+</body>
+</html>
+
